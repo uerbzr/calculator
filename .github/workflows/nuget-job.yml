@@ -1,4 +1,4 @@
-name: "Deploy to GitHub NuGet"
+﻿name: "Deploy to GitHub NuGet"
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -62,8 +62,8 @@ jobs:
           tag_name: ${{ steps.get_version.outputs.tag }}
           name: Release ${{ steps.get_version.outputs.tag }}
           body: |
-            ?? Release ${{ steps.get_version.outputs.version }} of workshop.calculator
-            ?? NuGet Package: uerbzr.workshop.calculator
-            ?? Version: ${{ steps.get_version.outputs.version }}
+            🎉 Release ${{ steps.get_version.outputs.version }} of workshop.calculator
+            🔢 NuGet Package: uerbzr.workshop.calculator
+            📦 Version: ${{ steps.get_version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
