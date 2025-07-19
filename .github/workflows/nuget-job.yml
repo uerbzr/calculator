@@ -1,31 +1,39 @@
-name: "Deploy to NuGet"
+name: "Deploy to GitHub NuGet"
 
-on: ["push"]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "9.0.x"  # adjust as needed
+
+      - name: Configure GitHub NuGet source
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/uerbzr/index.json \
+            --name github \
+            --username uerbzr \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text
 
       - name: Restore dependencies
         run: dotnet restore workshop.calculator/workshop.calculator.csproj
+
       - name: Build project
         run: dotnet build workshop.calculator/workshop.calculator.csproj --configuration Release
 
       - name: Pack NuGet package
         run: dotnet pack workshop.calculator/workshop.calculator.csproj --configuration Release --output ./nupkgs
 
-      - name: Publish to NuGet
-        uses: nuget/setup-nuget@v1
-        with:
-          nuget-version: "latest"
-
-      - name: Push NuGet package
-        run: nuget push nupkgs/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_API_KEY }}
+      - name: Push to GitHub NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }}
