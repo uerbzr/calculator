@@ -1,0 +1,31 @@
+name: "Deploy to NuGet"
+
+on: ["push"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore workshop.calculator/workshop.calculator.csproj
+      - name: Build project
+        run: dotnet build workshop.calculator/workshop.calculator.csproj --configuration Release
+
+      - name: Pack NuGet package
+        run: dotnet pack workshop.calculator/workshop.calculator.csproj --configuration Release --output ./nupkgs
+
+      - name: Publish to NuGet
+        uses: nuget/setup-nuget@v1
+        with:
+          nuget-version: "latest"
+
+      - name: Push NuGet package
+        run: nuget push ./nupkgs/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_API_KEY }}
